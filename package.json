@@ -1,0 +1,20 @@
+{
+  "name": "papra-ingest-tool",
+  "version": "0.0.0",
+  "description": "A small script for batch upload to Papra.",
+  "homepage": "https://github.com/Nyokinokonoko/papra-ingest-tool#readme",
+  "bugs": {
+    "url": "https://github.com/Nyokinokonoko/papra-ingest-tool/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nyokinokonoko/papra-ingest-tool.git"
+  },
+  "license": "MIT",
+  "author": "Kenny Ha",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
