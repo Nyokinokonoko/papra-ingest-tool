@@ -32,6 +32,7 @@ The wizard will prompt you for:
 
 - **Papra URL**: Your Papra instance URL (e.g., `https://your-papra-instance.com`)
 - **Papra API Key**: Your Papra API key
+- **Papra Organization ID**: Your Papra organization ID
 
 **Optional (for AI tagging feature):**
 
@@ -65,6 +66,7 @@ You can also manually edit the configuration file at the location shown above. T
 {
   "papra_url": "https://your-papra-instance.com",
   "papra_api_key": "your-papra-api-key",
+  "papra_organization_id": "your-organization-id",
   "openrouter_endpoint": "https://openrouter.ai/api/v1",
   "openrouter_api_key": "your-openrouter-api-key",
   "openrouter_model_name": "anthropic/claude-3.5-sonnet"

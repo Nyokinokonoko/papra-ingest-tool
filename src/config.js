@@ -25,6 +25,9 @@ async function getConfig() {
         papra_api_key: {
           type: "string",
         },
+        papra_organization_id: {
+          type: "string",
+        },
         openrouter_endpoint: {
           type: "string",
           default: "https://openrouter.ai/api/v1",
@@ -42,7 +45,7 @@ async function getConfig() {
   return config;
 }
 
-const REQUIRED_FIELDS = ["papra_url", "papra_api_key"];
+const REQUIRED_FIELDS = ["papra_url", "papra_api_key", "papra_organization_id"];
 
 /**
  * Normalizes a URL by adding https:// if no protocol and removing trailing slashes
@@ -128,6 +131,14 @@ async function runSetup() {
   });
   conf.set("papra_api_key", papraApiKey);
 
+  // Papra Organization ID
+  const papraOrganizationId = await input({
+    message: "Papra Organization ID:",
+    default: conf.get("papra_organization_id") || "",
+    validate: (value) => validateNotEmpty(value, "Papra Organization ID"),
+  });
+  conf.set("papra_organization_id", papraOrganizationId);
+
   console.log("\nOptional: AI Tagging Configuration (leave blank to skip)\n");
 
   // OpenRouter Endpoint (Optional)
@@ -168,6 +179,7 @@ async function runSetup() {
   return {
     papra_url: conf.get("papra_url"),
     papra_api_key: conf.get("papra_api_key"),
+    papra_organization_id: conf.get("papra_organization_id"),
     openrouter_endpoint: conf.get("openrouter_endpoint"),
     openrouter_api_key: conf.get("openrouter_api_key"),
     openrouter_model_name: conf.get("openrouter_model_name"),
@@ -188,6 +200,7 @@ async function ensureConfig() {
   return {
     papra_url: conf.get("papra_url"),
     papra_api_key: conf.get("papra_api_key"),
+    papra_organization_id: conf.get("papra_organization_id"),
     openrouter_endpoint: conf.get("openrouter_endpoint"),
     openrouter_api_key: conf.get("openrouter_api_key"),
     openrouter_model_name: conf.get("openrouter_model_name"),
