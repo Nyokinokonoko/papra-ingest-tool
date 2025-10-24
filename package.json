@@ -1,7 +1,14 @@
 {
   "name": "papra-ingest-tool",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A small script for batch upload to Papra.",
+  "keywords": [
+    "papra",
+    "upload",
+    "batch",
+    "cli",
+    "tool"
+  ],
   "homepage": "https://github.com/Nyokinokonoko/papra-ingest-tool#readme",
   "bugs": {
     "url": "https://github.com/Nyokinokonoko/papra-ingest-tool/issues"
@@ -13,8 +20,20 @@
   "license": "MIT",
   "author": "Kenny Ha",
   "type": "commonjs",
-  "main": "index.js",
+  "main": "src/index.js",
+  "bin": {
+    "papra-ingest-tool": "src/index.js"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7.9.0",
+    "conf": "^15.0.2"
   }
 }
