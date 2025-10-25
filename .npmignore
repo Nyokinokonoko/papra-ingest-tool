@@ -6,6 +6,9 @@ node_modules
 # User config (should not be published)
 config.json
 
+# GitHub Actions
+.github
+
 # IDE
 .vscode
 .idea
