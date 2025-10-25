@@ -117,11 +117,31 @@ The tool supports 100+ languages including: `eng` (English), `jpn` (Japanese), `
 
 For a complete list of supported language codes, see the [Tesseract language codes](https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html).
 
+#### Tag Support
+
+Automatically tag uploaded documents with one or more tags:
+
+```bash
+# Single tag
+npx papra-ingest-tool --src /path/to/folder --tag invoice
+
+# Multiple tags (comma-separated)
+npx papra-ingest-tool --src /path/to/folder --tag invoice,important,2024
+```
+
+**Tag Behavior:**
+
+- If a tag doesn't exist, it will be automatically created with default color (#000000)
+- Tags are case-insensitive when checking for existing tags
+- Tags are prepared once at the start to minimize API calls
+- All uploaded documents in the batch will receive the same tags
+
 #### Command Line Options
 
 - `--setup`: Run the configuration wizard
 - `--src <path>`: Path to a PDF file or directory (optional, will prompt if not provided)
 - `--lang <languages>`: OCR language codes, comma-separated (optional)
+- `--tag <tags>`: Tag names, comma-separated (optional)
 
 #### Examples
 
@@ -140,6 +160,12 @@ npx papra-ingest-tool --src ./documents --lang eng
 
 # Upload with multiple OCR languages
 npx papra-ingest-tool --src ./invoices --lang eng,jpn,chi_sim
+
+# Upload with tags
+npx papra-ingest-tool --src ./invoices --tag invoice,2024
+
+# Upload with both OCR languages and tags
+npx papra-ingest-tool --src ./documents --lang eng,jpn --tag important,review
 
 # Setup ignores other arguments
 npx papra-ingest-tool --setup --src ./folder --lang eng

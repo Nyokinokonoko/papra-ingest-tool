@@ -3,6 +3,7 @@ const path = require("path");
 const FormData = require("form-data");
 const https = require("https");
 const http = require("http");
+const { ensureTagsExist, attachTagToDocument } = require("./tags");
 
 // Supported OCR languages
 const SUPPORTED_OCR_LANGUAGES = [
@@ -173,9 +174,15 @@ function isPdfFile(filePath) {
  * @param {string} filePath - Path to PDF file
  * @param {object} config - Configuration object
  * @param {string[]} ocrLanguages - Optional OCR languages
+ * @param {Array} tagObjects - Optional array of tag objects with IDs
  * @returns {Promise<object>} Upload result
  */
-function uploadPdfToPapra(filePath, config, ocrLanguages = []) {
+function uploadPdfToPapra(
+  filePath,
+  config,
+  ocrLanguages = [],
+  tagObjects = []
+) {
   return new Promise((resolve, reject) => {
     const form = new FormData();
 
@@ -213,15 +220,38 @@ function uploadPdfToPapra(filePath, config, ocrLanguages = []) {
         data += chunk;
       });
 
-      res.on("end", () => {
+      res.on("end", async () => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           try {
             const response = JSON.parse(data);
-            resolve({
+            const result = {
               success: true,
               document: response.document,
               statusCode: res.statusCode,
-            });
+            };
+
+            // Attach tags if provided
+            if (
+              tagObjects &&
+              tagObjects.length > 0 &&
+              response.document &&
+              response.document.id
+            ) {
+              try {
+                for (const tag of tagObjects) {
+                  await attachTagToDocument(
+                    response.document.id,
+                    tag.id,
+                    config
+                  );
+                }
+                result.tagsAttached = tagObjects.length;
+              } catch (tagError) {
+                result.tagError = tagError.message;
+              }
+            }
+
+            resolve(result);
           } catch (error) {
             resolve({
               success: true,
@@ -250,8 +280,9 @@ function uploadPdfToPapra(filePath, config, ocrLanguages = []) {
  * @param {string} sourcePath - Path to PDF file or directory
  * @param {object} config - Configuration object
  * @param {string[]} ocrLanguages - Optional OCR languages
+ * @param {string[]} tags - Optional array of tag names
  */
-async function uploadPdfs(sourcePath, config, ocrLanguages = []) {
+async function uploadPdfs(sourcePath, config, ocrLanguages = [], tags = []) {
   try {
     // Check if path exists
     const stats = await fs.stat(sourcePath);
@@ -286,6 +317,19 @@ async function uploadPdfs(sourcePath, config, ocrLanguages = []) {
       console.log(`OCR Languages: ${ocrLanguages.join(", ")}\n`);
     }
 
+    // Ensure tags exist and get tag objects (to minimize API calls)
+    let tagObjects = [];
+    if (tags && tags.length > 0) {
+      console.log(`Tags: ${tags.join(", ")}`);
+      try {
+        tagObjects = await ensureTagsExist(tags, config);
+        console.log(`  ✓ Tags ready (${tagObjects.length} tag(s))\n`);
+      } catch (error) {
+        console.error(`  ✗ Failed to prepare tags: ${error.message}\n`);
+        process.exit(1);
+      }
+    }
+
     // Upload each PDF
     let successCount = 0;
     let failCount = 0;
@@ -297,10 +341,21 @@ async function uploadPdfs(sourcePath, config, ocrLanguages = []) {
       console.log(`[${i + 1}/${pdfFiles.length}] Uploading: ${fileName}`);
 
       try {
-        const result = await uploadPdfToPapra(filePath, config, ocrLanguages);
+        const result = await uploadPdfToPapra(
+          filePath,
+          config,
+          ocrLanguages,
+          tagObjects
+        );
         console.log(`  ✓ Uploaded successfully`);
         if (result.document && result.document.id) {
           console.log(`    Document ID: ${result.document.id}`);
+        }
+        if (result.tagsAttached) {
+          console.log(`    Tags attached: ${result.tagsAttached}`);
+        }
+        if (result.tagError) {
+          console.log(`    ⚠ Tag attachment warning: ${result.tagError}`);
         }
         successCount++;
       } catch (error) {

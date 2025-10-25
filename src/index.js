@@ -14,6 +14,7 @@ function parseArguments() {
     setup: false,
     src: null,
     lang: [],
+    tag: [],
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -28,6 +29,11 @@ function parseArguments() {
       // Split by comma to support multiple languages
       const langValue = args[i + 1];
       parsed.lang = langValue.split(",").map((lang) => lang.trim());
+      i++; // Skip next arg as it's the value
+    } else if (arg === "--tag" && i + 1 < args.length) {
+      // Split by comma to support multiple tags
+      const tagValue = args[i + 1];
+      parsed.tag = tagValue.split(",").map((tag) => tag.trim());
       i++; // Skip next arg as it's the value
     }
   }
@@ -87,7 +93,7 @@ async function main() {
     .replace(/^"|"$/g, "");
 
   // Upload PDFs
-  await uploadPdfs(sourcePath, config, args.lang);
+  await uploadPdfs(sourcePath, config, args.lang, args.tag);
 }
 
 // Run the main function
