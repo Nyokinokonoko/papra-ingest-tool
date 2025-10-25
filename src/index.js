@@ -38,6 +38,9 @@ function parseArguments() {
       parsed.tag = tagValue.split(",").map((tag) => tag.trim());
       i++; // Skip next arg as it's the value
     } else if (arg === "--autotag") {
+      console.warn(
+        "Warning: --autotag is experimental and may produce inaccurate results. Use with caution."
+      );
       parsed.autotag = true;
     } else if (arg === "--verbose") {
       parsed.verbose = true;
