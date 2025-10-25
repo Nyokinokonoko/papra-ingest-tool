@@ -1,0 +1,15 @@
+# Development files
+.git
+.gitignore
+node_modules
+
+# User config (should not be published)
+config.json
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
