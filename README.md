@@ -69,7 +69,7 @@ You can also manually edit the configuration file at the location shown above. T
   "papra_organization_id": "your-organization-id",
   "openrouter_endpoint": "https://openrouter.ai/api/v1",
   "openrouter_api_key": "your-openrouter-api-key",
-  "openrouter_model_name": "anthropic/claude-3.5-sonnet"
+  "openrouter_model_name": "openai/gpt-5-nano"
 }
 ```
 
