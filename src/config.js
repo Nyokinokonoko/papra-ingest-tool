@@ -166,7 +166,7 @@ async function runSetup() {
   // OpenRouter Model Name (Optional)
   const openrouterModelName = await input({
     message: "OpenRouter Model Name (optional, for AI tagging):",
-    default: conf.get("openrouter_model_name") || "",
+    default: conf.get("openrouter_model_name") || "openai/gpt-5-nano",
   });
   if (openrouterModelName.trim()) {
     conf.set("openrouter_model_name", openrouterModelName);
