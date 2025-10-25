@@ -16,6 +16,7 @@ function parseArguments() {
     lang: [],
     tag: [],
     autotag: false,
+    verbose: false,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -38,6 +39,8 @@ function parseArguments() {
       i++; // Skip next arg as it's the value
     } else if (arg === "--autotag") {
       parsed.autotag = true;
+    } else if (arg === "--verbose") {
+      parsed.verbose = true;
     }
   }
 
@@ -96,7 +99,14 @@ async function main() {
     .replace(/^"|"$/g, "");
 
   // Upload PDFs
-  await uploadPdfs(sourcePath, config, args.lang, args.tag, args.autotag);
+  await uploadPdfs(
+    sourcePath,
+    config,
+    args.lang,
+    args.tag,
+    args.autotag,
+    args.verbose
+  );
 }
 
 // Run the main function

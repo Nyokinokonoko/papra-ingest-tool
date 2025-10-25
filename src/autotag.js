@@ -75,9 +75,10 @@ function makeOpenRouterRequest(config, requestBody) {
 /**
  * Extracts text and metadata from a PDF file
  * @param {string} filePath - Path to the PDF file
+ * @param {boolean} verbose - Whether to show verbose logging
  * @returns {Promise<object>} Extracted data {text, metadata, pages}
  */
-async function extractPdfText(filePath) {
+async function extractPdfText(filePath, verbose = false) {
   const dataBuffer = await fs.readFile(filePath);
   const data = await pdfParse(dataBuffer);
 
@@ -88,10 +89,12 @@ async function extractPdfText(filePath) {
     metadata: data.metadata || {},
   };
 
-  // Log extraction results
-  console.log(
-    `    PDF extracted: ${result.text.length} chars, ${result.numPages} pages`
-  );
+  // Log extraction results (verbose only)
+  if (verbose) {
+    console.log(
+      `    PDF extracted: ${result.text.length} chars, ${result.numPages} pages`
+    );
+  }
 
   return result;
 }
@@ -234,9 +237,10 @@ function detectDocumentType(text, headings) {
  * Builds a compact document summary
  * @param {object} pdfData - Extracted PDF data
  * @param {string} fileName - Name of the file
+ * @param {boolean} verbose - Whether to show verbose logging
  * @returns {string} Compact summary (≤2000 chars)
  */
-function buildDocumentSummary(pdfData, fileName) {
+function buildDocumentSummary(pdfData, fileName, verbose = false) {
   const { text, info } = pdfData;
 
   // Handle empty or minimal text
@@ -305,7 +309,11 @@ function buildDocumentSummary(pdfData, fileName) {
 
   // Ensure we don't exceed 2000 chars
   const finalSummary = summary.slice(0, 2000);
-  console.log(`    Summary generated: ${finalSummary.length} chars`);
+
+  // Log summary size (verbose only)
+  if (verbose) {
+    console.log(`    Summary generated: ${finalSummary.length} chars`);
+  }
 
   return finalSummary;
 }
@@ -346,9 +354,10 @@ function validateAndNormalizeTags(rawTags) {
  * Generates tags for a document using OpenRouter LLM
  * @param {string} filePath - Full path to the PDF file
  * @param {object} config - Configuration object
+ * @param {boolean} verbose - Whether to show verbose logging
  * @returns {Promise<string[]>} Array of generated tag names
  */
-async function generateTagsForDocument(filePath, config) {
+async function generateTagsForDocument(filePath, config, verbose = false) {
   // Validate OpenRouter configuration
   if (!config.openrouter_api_key) {
     throw new Error(
@@ -362,8 +371,8 @@ async function generateTagsForDocument(filePath, config) {
   let summary;
   try {
     console.log(`  → Extracting PDF text...`);
-    const pdfData = await extractPdfText(filePath);
-    summary = buildDocumentSummary(pdfData, fileName);
+    const pdfData = await extractPdfText(filePath, verbose);
+    summary = buildDocumentSummary(pdfData, fileName, verbose);
 
     if (!summary || summary.trim().length === 0) {
       throw new Error("Summary generation produced no content");
@@ -424,11 +433,13 @@ Return ONLY a JSON array of 2–5 tag names (lowercase, 1–3 words). Example: [
     console.log(`    Sending to LLM...`);
     const response = await makeOpenRouterRequest(config, requestBody);
 
-    // Log raw response for debugging
-    console.log(
-      `    LLM response received:`,
-      JSON.stringify(response, null, 2).slice(0, 500)
-    );
+    // Log raw response for debugging (verbose only)
+    if (verbose) {
+      console.log(
+        `    LLM response received:`,
+        JSON.stringify(response, null, 2).slice(0, 500)
+      );
+    }
 
     if (!response) {
       throw new Error("No response from OpenRouter API");
@@ -484,7 +495,10 @@ Return ONLY a JSON array of 2–5 tag names (lowercase, 1–3 words). Example: [
       throw new Error("LLM returned empty content after trimming");
     }
 
-    console.log(`    LLM content: ${trimmedContent.slice(0, 200)}...`);
+    // Log LLM content (verbose only)
+    if (verbose) {
+      console.log(`    LLM content: ${trimmedContent.slice(0, 200)}...`);
+    }
 
     // Try to parse the JSON response
     let tags;
@@ -500,15 +514,25 @@ Return ONLY a JSON array of 2–5 tag names (lowercase, 1–3 words). Example: [
       }
 
       tags = JSON.parse(cleanContent);
-      console.log(`    Parsed tags:`, tags);
+
+      // Log parsed tags (verbose only)
+      if (verbose) {
+        console.log(`    Parsed tags:`, tags);
+      }
     } catch (parseError) {
       // If JSON parsing fails, try to extract array from the response
-      console.log(`    JSON parse failed, trying to extract array...`);
+      if (verbose) {
+        console.log(`    JSON parse failed, trying to extract array...`);
+      }
       const match = trimmedContent.match(/\[.*\]/s);
       if (match) {
         try {
           tags = JSON.parse(match[0]);
-          console.log(`    Extracted tags from array:`, tags);
+
+          // Log extracted tags (verbose only)
+          if (verbose) {
+            console.log(`    Extracted tags from array:`, tags);
+          }
         } catch (extractError) {
           throw new Error(`Failed to parse extracted array: ${match[0]}`);
         }
