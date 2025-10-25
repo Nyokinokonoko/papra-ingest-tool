@@ -115,7 +115,7 @@ async function createTag(tagName, config) {
  * @param {string} documentId - Document ID
  * @param {string} tagId - Tag ID
  * @param {object} config - Configuration object
- * @returns {Promise<void>}
+ * @returns {Promise<{attached: boolean, alreadyAttached: boolean}>}
  */
 async function attachTagToDocument(documentId, tagId, config) {
   const body = JSON.stringify({
@@ -140,7 +140,18 @@ async function attachTagToDocument(documentId, tagId, config) {
     },
   };
 
-  await makeRequest(options, body);
+  try {
+    await makeRequest(options, body);
+    return { attached: true, alreadyAttached: false };
+  } catch (error) {
+    // Check if error is "documents.already_has_tag"
+    if (error.message.includes("documents.already_has_tag")) {
+      // This is not an error - the tag is already attached, which is the desired state
+      return { attached: true, alreadyAttached: true };
+    }
+    // Re-throw other errors
+    throw error;
+  }
 }
 
 /**
