@@ -75,13 +75,84 @@ You can also manually edit the configuration file at the location shown above. T
 
 ## Usage
 
-Once configured, simply run:
+### Upload PDFs to Papra
+
+The tool supports uploading PDF files to your Papra instance with optional OCR language specification.
+
+#### Basic Usage
+
+Upload a single PDF file (will prompt for path):
 
 ```bash
 npx papra-ingest-tool
 ```
 
-The tool will validate your configuration and proceed with the main functionality.
+Upload with a specific file path:
+
+```bash
+npx papra-ingest-tool --src /path/to/file.pdf
+```
+
+Upload all PDFs in a directory (recursive):
+
+```bash
+npx papra-ingest-tool --src /path/to/folder
+```
+
+#### OCR Language Support
+
+Specify OCR language(s) for document processing:
+
+```bash
+# Single language
+npx papra-ingest-tool --src /path/to/folder --lang eng
+
+# Multiple languages (comma-separated)
+npx papra-ingest-tool --src /path/to/folder --lang eng,jpn,fra
+```
+
+**Supported OCR Languages:**
+
+The tool supports 100+ languages including: `eng` (English), `jpn` (Japanese), `fra` (French), `deu` (German), `spa` (Spanish), `chi_sim` (Chinese Simplified), `chi_tra` (Chinese Traditional), `kor` (Korean), `ara` (Arabic), `rus` (Russian), and many more.
+
+For a complete list of supported language codes, see the [Tesseract language codes](https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html).
+
+#### Command Line Options
+
+- `--setup`: Run the configuration wizard
+- `--src <path>`: Path to a PDF file or directory (optional, will prompt if not provided)
+- `--lang <languages>`: OCR language codes, comma-separated (optional)
+
+#### Examples
+
+```bash
+# Setup configuration
+npx papra-ingest-tool --setup
+
+# Upload with prompt for path
+npx papra-ingest-tool
+
+# Upload specific file
+npx papra-ingest-tool --src document.pdf
+
+# Upload directory with English OCR
+npx papra-ingest-tool --src ./documents --lang eng
+
+# Upload with multiple OCR languages
+npx papra-ingest-tool --src ./invoices --lang eng,jpn,chi_sim
+
+# Setup ignores other arguments
+npx papra-ingest-tool --setup --src ./folder --lang eng
+# (Only runs setup, ignores --src and --lang)
+```
+
+#### Behavior
+
+- **Directory Upload**: When a directory is specified, the tool recursively searches for all PDF files and uploads them one by one.
+- **File Validation**: Only PDF files are processed. Non-PDF files are rejected with an error message.
+- **No PDFs Found**: If no PDF files are found in the specified directory, the tool exits gracefully with an error message.
+- **Progress Tracking**: The tool displays upload progress, showing which file is being uploaded and the success/failure status.
+- **Upload Summary**: After all files are processed, a summary is displayed showing total files, successful uploads, and failed uploads.
 
 ## Development
 
