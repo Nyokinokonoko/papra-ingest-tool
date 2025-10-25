@@ -136,12 +136,71 @@ npx papra-ingest-tool --src /path/to/folder --tag invoice,important,2024
 - Tags are prepared once at the start to minimize API calls
 - All uploaded documents in the batch will receive the same tags
 
+#### AI Auto-Tagging
+
+Enable AI-powered automatic tagging using OpenRouter LLM to generate relevant tags for each document individually:
+
+```bash
+# Enable autotag
+npx papra-ingest-tool --src /path/to/folder --autotag
+
+# Combine autotag with manual tags
+npx papra-ingest-tool --src /path/to/folder --autotag --tag important
+```
+
+**Autotag Features:**
+
+- Generates 2-5 contextually relevant tags per document based on **actual PDF content**
+- Analyzes each document individually for higher accuracy
+- **Efficient local PDF processing** - extracts and summarizes content locally
+- **Smart summarization** - creates compact summaries (≤2000 chars) including:
+  - Document title and detected type (invoice, contract, report, etc.)
+  - Key headings and sections
+  - Important entities (dates, amounts, emails, IDs)
+  - Top keywords using TF-IDF analysis
+  - Excerpts from first and last pages
+- Prioritizes existing tags in your Papra instance to maintain consistency
+- Avoids creating overly specific tags that would clutter your tag system
+- Can be combined with manual tags (documents receive both auto-generated and manual tags)
+- Requires OpenRouter API configuration (set up via `--setup`)
+
+**How It Works:**
+
+1. The tool extracts text from the PDF file locally using `pdf-parse`
+2. A compact summary is built using smart extraction algorithms:
+   - Detects document type (invoice, contract, report, etc.)
+   - Extracts headings, entities, and keywords
+   - Captures key excerpts from first and last pages
+3. The summary (not the full PDF) is sent to the LLM
+4. The LLM receives a list of existing tags to prioritize
+5. The LLM analyzes the summary and generates 2-5 appropriate tags
+6. Tags are automatically created if they don't exist
+7. All tags (auto-generated + manual) are attached to the document
+
+**Performance & Cost:**
+
+- **Fast**: Local extraction + small payload to LLM (~500-1000 tokens vs 5000-50000)
+- **Cheap**: 90-95% token reduction compared to sending full PDF
+- **Accurate**: Focused summary provides better context than noisy full PDF
+- **Consistent**: Temperature 0 for deterministic tagging
+
+**Configuration Requirements:**
+
+To use autotag, you must configure OpenRouter settings during setup:
+
+- **OpenRouter API Key**: Required for LLM access
+- **OpenRouter Endpoint**: Optional (defaults to `https://openrouter.ai/api/v1`)
+- **OpenRouter Model Name**: Optional (defaults to `openai/gpt-5-nano` - fast and cost-effective)
+
+Run `npx papra-ingest-tool --setup` to configure these settings.
+
 #### Command Line Options
 
 - `--setup`: Run the configuration wizard
 - `--src <path>`: Path to a PDF file or directory (optional, will prompt if not provided)
 - `--lang <languages>`: OCR language codes, comma-separated (optional)
 - `--tag <tags>`: Tag names, comma-separated (optional)
+- `--autotag`: Enable AI-powered automatic tagging (optional, requires OpenRouter configuration)
 
 #### Examples
 
@@ -166,6 +225,15 @@ npx papra-ingest-tool --src ./invoices --tag invoice,2024
 
 # Upload with both OCR languages and tags
 npx papra-ingest-tool --src ./documents --lang eng,jpn --tag important,review
+
+# Upload with AI auto-tagging
+npx papra-ingest-tool --src ./documents --autotag
+
+# Upload with auto-tagging AND manual tags (documents get both)
+npx papra-ingest-tool --src ./documents --autotag --tag important,2024
+
+# Full example: OCR + autotag + manual tags
+npx papra-ingest-tool --src ./invoices --lang eng,jpn --autotag --tag finance
 
 # Setup ignores other arguments
 npx papra-ingest-tool --setup --src ./folder --lang eng
