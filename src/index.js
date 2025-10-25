@@ -15,6 +15,7 @@ function parseArguments() {
     src: null,
     lang: [],
     tag: [],
+    autotag: false,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -35,6 +36,8 @@ function parseArguments() {
       const tagValue = args[i + 1];
       parsed.tag = tagValue.split(",").map((tag) => tag.trim());
       i++; // Skip next arg as it's the value
+    } else if (arg === "--autotag") {
+      parsed.autotag = true;
     }
   }
 
@@ -93,7 +96,7 @@ async function main() {
     .replace(/^"|"$/g, "");
 
   // Upload PDFs
-  await uploadPdfs(sourcePath, config, args.lang, args.tag);
+  await uploadPdfs(sourcePath, config, args.lang, args.tag, args.autotag);
 }
 
 // Run the main function
